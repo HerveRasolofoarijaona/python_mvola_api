@@ -11,6 +11,9 @@ import time
 
 app = Flask(__name__)
 
+# Configuration - URL de base Mvola depuis variable d'environnement
+MVOLA_BASE_URL = os.environ.get('MVOLA_BASE_URL')
+
 # Dictionnaire pour stocker les résultats des callbacks en attente
 # Format: {correlation_id: {'status': None, 'data': None, 'event': threading.Event()}}
 pending_callbacks = {}
@@ -83,7 +86,7 @@ def get_mvola_token():
     encoded_credentials = base64.b64encode(credentials.encode()).decode()
     
     # Préparer la requête vers l'API Mvola
-    mvola_url = 'https://devapi.mvola.mg/token'
+    mvola_url = f'{MVOLA_BASE_URL}/token'
     
     headers = {
         'Cache-Control': 'no-cache',
@@ -316,7 +319,7 @@ def create_mvola_transaction():
     app.logger.info(f'X-CorrelationID: {x_correlation_id}')
     
     # Préparer la requête vers l'API Mvola
-    mvola_url = 'https://devapi.mvola.mg/mvola/mm/transactions/type/merchantpay/1.0.0/'
+    mvola_url = f'{MVOLA_BASE_URL}/mvola/mm/transactions/type/merchantpay/1.0.0/'
     
     # Construire l'URL de callback (utiliser l'URL publique de votre serveur)
     # Pour le développement local, vous devrez utiliser ngrok ou un serveur public
