@@ -399,12 +399,21 @@ def create_mvola_transaction():
                     # Nettoyer le dictionnaire
                     del pending_callbacks[x_correlation_id]
                     
-                    # Retourner le résultat du callback
-                    return jsonify({
+                    # Extraire les informations importantes du callback
+                    callback_data = callback_result['data']
+                    
+                    # Construire la réponse simplifiée
+                    response_data = {
                         'status': callback_result['status'],
-                        'correlation_id': x_correlation_id,
-                        'callback_data': callback_result['data']
-                    }), 200
+                        'MVolaReference': callback_data.get('transactionReference'),
+                        'requestDate': callback_data.get('requestDate'),
+                        'debitParty': callback_data.get('debitParty', []),
+                        'creditParty': callback_data.get('creditParty', []),
+                        'fees': callback_data.get('fees', [])
+                    }
+                    
+                    # Retourner le résultat du callback
+                    return jsonify(response_data), 200
                 else:
                     # Timeout - callback non reçu
                     app.logger.warning('⚠️ Timeout: callback non reçu dans les 60 secondes')
