@@ -164,10 +164,7 @@ def mvola_callback():
     app.logger.info('=== Callback Mvola reçu ===')
     
     # Récupérer les headers importants
-    correlation_id = request.headers.get('X-CorrelationID', 'N/A')
     content_type = request.headers.get('Content-Type', 'N/A')
-    
-    app.logger.info(f'X-CorrelationID: {correlation_id}')
     app.logger.info(f'Content-Type: {content_type}')
     
     # Récupérer le body de la requête
@@ -184,25 +181,46 @@ def mvola_callback():
         # Logger toutes les données reçues
         app.logger.info(f'Données callback complètes: {callback_data}')
         
-        # Extraire les informations importantes
-        status = callback_data.get('status', 'UNKNOWN')
+        # Extraire le X-CorrelationID depuis les metadata
+        correlation_id = 'N/A'
+        metadata = callback_data.get('metadata', [])
+        for meta in metadata:
+            if meta.get('key') == 'XCorrelationId':
+                correlation_id = meta.get('value', 'N/A')
+                break
+        
+        app.logger.info(f'X-CorrelationID extrait: {correlation_id}')
+        
+        # Extraire le statut (Mvola utilise "transactionStatus")
+        transaction_status = callback_data.get('transactionStatus', 'UNKNOWN')
+        
+        # Mapper le statut Mvola vers nos statuts
+        status_mapping = {
+            'completed': 'SUCCESS',
+            'failed': 'FAILED',
+            'pending': 'PENDING'
+        }
+        status = status_mapping.get(transaction_status.lower(), transaction_status.upper())
+        
         transaction_ref = callback_data.get('serverCorrelationId', 
                                           callback_data.get('transactionReference', 'N/A'))
         
-        app.logger.info(f'Status de la transaction: {status}')
+        app.logger.info(f'Status de la transaction: {status} (original: {transaction_status})')
         app.logger.info(f'Référence transaction: {transaction_ref}')
         
         # Logger selon le statut
-        if status == 'SUCCESS' or status == 'success':
+        if status == 'SUCCESS':
             app.logger.info('✅ TRANSACTION RÉUSSIE !')
             amount = callback_data.get('amount', 'N/A')
-            app.logger.info(f'Montant: {amount}')
-        elif status == 'FAILED' or status == 'failed':
+            fees = callback_data.get('fees', [])
+            fee_amount = fees[0].get('feeAmount', '0') if fees else '0'
+            app.logger.info(f'Montant: {amount}, Frais: {fee_amount}')
+        elif status == 'FAILED':
             app.logger.error('❌ TRANSACTION ÉCHOUÉE !')
             error_msg = callback_data.get('errorMessage', 
                                          callback_data.get('message', 'Erreur inconnue'))
             app.logger.error(f'Raison: {error_msg}')
-        elif status == 'PENDING' or status == 'pending':
+        elif status == 'PENDING':
             app.logger.info('⏳ Transaction en attente...')
         else:
             app.logger.warning(f'⚠️ Statut inconnu: {status}')
@@ -447,5 +465,4 @@ def internal_error(error):
 
 if __name__ == '__main__':
     app.logger.info('🚀 Démarrage de l\'application Mvola Token API')
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=5000)
