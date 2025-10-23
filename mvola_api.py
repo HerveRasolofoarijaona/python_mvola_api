@@ -389,6 +389,12 @@ def create_mvola_transaction():
         if response.status_code in [200, 201, 202]:
             if response.status_code == 202:
                 app.logger.info('✓ Transaction acceptée (en cours de traitement asynchrone)')
+                
+                # Extraire le serverCorrelationId de la réponse
+                response_data = response.json()
+                server_correlation_id = response_data.get('serverCorrelationId', 'N/A')
+                app.logger.info(f'Server Correlation ID: {server_correlation_id}')
+                
                 app.logger.info('⏳ Attente du callback de Mvola (timeout: 200 secondes)...')
                 
                 # Attendre le callback pendant 200 secondes maximum
@@ -419,7 +425,7 @@ def create_mvola_transaction():
                     return jsonify(response_data), 200
                 else:
                     # Timeout - callback non reçu
-                    app.logger.warning('⚠️ Timeout: callback non reçu dans les 120 secondes')
+                    app.logger.warning('⚠️ Timeout: callback non reçu dans les 200 secondes')
                     
                     # Nettoyer le dictionnaire
                     del pending_callbacks[x_correlation_id]
