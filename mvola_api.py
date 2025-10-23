@@ -519,15 +519,19 @@ def create_mvola_transaction():
                             app.logger.info('✅ Détails de la transaction récupérés avec succès')
                             
                             # Extraire le statut
-                            transaction_status = details.get('status', 'UNKNOWN')
+                            transaction_status = details.get('status', 'COMPLETED')
                             app.logger.info(f'Statut final: {transaction_status}')
                             
-                            return jsonify({
+                            return jsonify({                                
                                 'status': transaction_status,
-                                'transactionDetails': details,
+                                'MVolaTransactionReference': object_reference.get('transactionReference'),
                                 'serverCorrelationId': server_correlation_id,
-                                'xCorrelationId': x_correlation_id,
-                                'source': 'api_polling'
+                                'requestDate': object_reference.get('requestDate'),
+                                'debitParty': object_reference.get('debitParty', []),
+                                'creditParty': object_reference.get('creditParty', []),
+                                'fees': object_reference.get('fees', []),
+                                'amount': object_reference.get('transactionReference'),
+                                'xCorrelationId': x_correlation_id
                             }), 200
                         else:
                             app.logger.warning('Échec de la récupération des détails')
