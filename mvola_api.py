@@ -518,19 +518,23 @@ def create_mvola_transaction():
                         if details:
                             app.logger.info('✅ Détails de la transaction récupérés avec succès')
                             
-                            # Extraire le statut
-                            transaction_status = details.get('status', 'COMPLETED')
-                            app.logger.info(f'Statut final: {transaction_status}')
+                            # Extraire les données spécifiques
+                            transaction_reference = details.get('transactionReference', '')
+                            request_date = details.get('requestDate', '')
+                            debit_party = details.get('debitParty', [])
+                            credit_party = details.get('creditParty', [])
+                            fees = details.get('fees', [])
+                            amount = details.get('amount', '')
                             
-                            return jsonify({                                
+                            return jsonify({
                                 'status': transaction_status,
-                                'MVolaTransactionReference': object_reference.get('transactionReference'),
+                                'transactionReference': transaction_reference,
                                 'serverCorrelationId': server_correlation_id,
-                                'requestDate': object_reference.get('requestDate'),
-                                'debitParty': object_reference.get('debitParty', []),
-                                'creditParty': object_reference.get('creditParty', []),
-                                'fees': object_reference.get('fees', []),
-                                'amount': object_reference.get('transactionReference'),
+                                'requestDate': request_date,
+                                'debitParty': debit_party,
+                                'creditParty': credit_party,
+                                'amount': amount,
+                                'fees': fees,
                                 'xCorrelationId': x_correlation_id
                             }), 200
                         else:
