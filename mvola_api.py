@@ -109,6 +109,7 @@ def get_mvola_token():
         duration = (end_time - start_time).total_seconds()
         
         app.logger.info(f'Réponse reçue de Mvola - Status: {response.status_code} - Durée: {duration}s')
+        app.logger.debug(f'Réponse complète Mvola Token: {response.text}')
         
         if response.status_code == 200:
             app.logger.info('✓ Token obtenu avec succès')
@@ -260,9 +261,12 @@ def check_transaction_status(access_token, server_correlation_id, x_correlation_
         response = requests.get(status_url, headers=headers, timeout=10)
         
         app.logger.info(f'Status check - HTTP {response.status_code}')
+        app.logger.debug(f'Réponse Status API: {response.text}')
         
         if response.status_code == 200:
-            return response.json()
+            response_data = response.json()
+            app.logger.info(f'Données Status reçues: {response_data}')
+            return response_data
         else:
             app.logger.warning(f'Status check failed: {response.text}')
             return None
@@ -301,9 +305,12 @@ def get_transaction_details(access_token, object_reference, x_correlation_id, pa
         response = requests.get(details_url, headers=headers, timeout=10)
         
         app.logger.info(f'Details fetch - HTTP {response.status_code}')
+        app.logger.debug(f'Réponse Details API: {response.text}')
         
         if response.status_code == 200:
-            return response.json()
+            response_data = response.json()
+            app.logger.info(f'Détails transaction reçus: {response_data}')
+            return response_data
         else:
             app.logger.warning(f'Details fetch failed: {response.text}')
             return None
@@ -422,9 +429,12 @@ def create_mvola_transaction():
         duration = (end_time - start_time).total_seconds()
         
         app.logger.info(f'Réponse reçue de Mvola - Status: {response.status_code} - Durée: {duration}s')
+        app.logger.debug(f'Réponse complète Mvola Transaction: {response.text}')
         
         if response.status_code in [200, 201, 202]:
             response_data = response.json()
+            app.logger.info(f'Données transaction initiales: {response_data}')
+            
             server_correlation_id = response_data.get('serverCorrelationId')
             
             if not server_correlation_id:
