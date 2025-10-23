@@ -518,25 +518,36 @@ def create_mvola_transaction():
                         if details:
                             app.logger.info('✅ Détails de la transaction récupérés avec succès')
                             
-                            # Extraire les données spécifiques
-                            transaction_reference = details.get('transactionReference', '')
-                            request_date = details.get('requestDate', '')
-                            debit_party = details.get('debitParty', [])
-                            credit_party = details.get('creditParty', [])
-                            fees = details.get('fees', [])
-                            amount = details.get('amount', '')
+                            # Extraire le statut depuis transactionStatus
+                            transaction_status = details.get('transactionStatus', 'UNKNOWN')
                             
-                            return jsonify({
-                                'status': transaction_status,
-                                'transactionReference': transaction_reference,
+                            # Mapper le statut Mvola vers nos statuts
+                            status_mapping = {
+                                'completed': 'SUCCESS',
+                                'failed': 'FAILED',
+                                'pending': 'PENDING'
+                            }
+                            status = status_mapping.get(transaction_status.lower(), transaction_status.upper())
+                            
+                            app.logger.info(f'Statut final: {status} (original: {transaction_status})')
+                            
+                            # Construire la réponse depuis l'API (même format que callback)
+                            response_data = {
+                                'status': status,
+                                'transactionReference': details.get('transactionReference'),
                                 'serverCorrelationId': server_correlation_id,
-                                'requestDate': request_date,
-                                'debitParty': debit_party,
-                                'creditParty': credit_party,
-                                'amount': amount,
-                                'fees': fees,
-                                'xCorrelationId': x_correlation_id
-                            }), 200
+                                'requestDate': details.get('requestDate'),
+                                'creationDate': details.get('creationDate'),
+                                'debitParty': details.get('debitParty', []),
+                                'creditParty': details.get('creditParty', []),
+                                'fees': details.get('fees', []),
+                                'amount': details.get('amount'),
+                                'currency': details.get('currency', 'Ar'),
+                                'xCorrelationId': x_correlation_id,
+                                'source': 'api_polling'
+                            }
+                            
+                            return jsonify(response_data), 200
                         else:
                             app.logger.warning('Échec de la récupération des détails')
                             return jsonify({
