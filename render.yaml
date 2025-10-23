@@ -3,7 +3,7 @@ services:
     name: mvola-api
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn mvola_api:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1
+    startCommand: gunicorn mvola_api:app --bind 0.0.0.0:$PORT --timeout 200 --workers 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.0
