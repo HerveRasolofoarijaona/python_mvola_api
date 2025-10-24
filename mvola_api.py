@@ -73,7 +73,7 @@ def index():
         }), 404
 
 @app.route('/help', methods=['GET'])
-def index():
+def helpdesk():
     """Page d'aide API"""
     try:
         with open('help.html', 'r', encoding='utf-8') as f:
