@@ -556,8 +556,8 @@ def create_mvola_transaction():
                     else:
                         app.logger.warning('objectReference non disponible')
                         return jsonify({
-                            'status': 'PENDING',
-                            'message': 'Transaction en cours de traitement. objectReference non encore disponible.',
+                            'status': 'FAILED',
+                            'message': 'Transaction non aboutie. Solde du client insuffissant',
                             'serverCorrelationId': server_correlation_id,
                             'xCorrelationId': x_correlation_id
                         }), 202
