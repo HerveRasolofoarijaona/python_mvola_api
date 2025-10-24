@@ -59,6 +59,32 @@ def log_request_info():
     """Log les informations de chaque requête"""
     app.logger.info(f'Request: {request.method} {request.path} from {request.remote_addr}')
 
+@app.route('/', methods=['GET'])
+def index():
+    """Page d'accueil de l'API"""
+    try:
+        with open('index.html', 'r', encoding='utf-8') as f:
+            return f.read(), 200
+    except FileNotFoundError:
+        app.logger.error('Fichier index.html non trouvé')
+        return jsonify({
+            'error': 'Page not found',
+            'message': 'index.html file is missing'
+        }), 404
+
+@app.route('/help', methods=['GET'])
+def index():
+    """Page d'aide API"""
+    try:
+        with open('help.html', 'r', encoding='utf-8') as f:
+            return f.read(), 200
+    except FileNotFoundError:
+        app.logger.error('Fichier index.html non trouvé')
+        return jsonify({
+            'error': 'Page not found',
+            'message': 'help.html file is missing'
+        }), 404
+
 @app.route('/mvola/token', methods=['POST'])
 def get_mvola_token():
     """
